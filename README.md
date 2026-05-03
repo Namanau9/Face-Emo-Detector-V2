@@ -4,6 +4,8 @@ A production-ready face emotion recognition web app built with TensorFlow/Keras,
 
 It trains on a FER-style dataset, serves predictions through a FastAPI backend, and delivers a modern webcam-based frontend with live emotion feedback, confidence smoothing, screenshot capture, and CSV logging.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Namanau9/Face-Emo-Detector-V2)
+
 ## Highlights
 
 - EfficientNetB0 and MobileNetV2 training options for CPU-friendly deployment
@@ -253,6 +255,21 @@ The repository currently ignores `dataset/` and generated trained model artifact
 - commit the model artifacts intentionally, or
 - upload them from managed storage at deploy/start time, or
 - retrain within your deployment workflow
+
+### Recommended deployment flow
+
+1. Open the repository on GitHub.
+2. Click the `Deploy to Render` button above, or create a new Render Blueprint manually.
+3. Connect your GitHub account to Render if prompted.
+4. Confirm that Render detects `render.yaml` at the repo root.
+5. Review the two services:
+   - `face-emotion-api`
+   - `face-emotion-frontend`
+6. Update the placeholder env values:
+   - set backend `CORS_ORIGINS` to your frontend Render URL
+   - set frontend `NEXT_PUBLIC_API_BASE_URL` to your backend Render URL
+7. Deploy the Blueprint.
+8. After the first deploy, copy the actual service URLs back into the env vars if needed and redeploy once.
 
 ## Performance Notes
 
