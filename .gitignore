@@ -11,14 +11,10 @@ __pycache__/
 *.py[cod]
 *.so
 *.h5
-*.keras
 .env
 .env.local
 .env.*.local
-saved_model/*.keras
 saved_model/*.h5
-saved_model/*.csv
-saved_model/*.json
 saved_model/checkpoints/
 dataset/
 frontend/.next/

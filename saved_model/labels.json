@@ -1,0 +1,14 @@
+{
+  "labels": [
+    "angry",
+    "disgust",
+    "fear",
+    "happy",
+    "neutral",
+    "sad",
+    "surprise"
+  ],
+  "architecture": "efficientnetb0",
+  "image_size": 128,
+  "preprocess": "efficientnetb0"
+}
