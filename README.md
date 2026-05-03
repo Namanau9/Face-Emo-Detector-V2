@@ -1,78 +1,62 @@
-# Face Emotion Recognition Web App
+# Face Emo Detector V2
 
-A production-ready full-stack face emotion recognition app built with TensorFlow/Keras, FastAPI, Next.js, TailwindCSS, and OpenCV. It trains on the dataset already present in this repository and serves low-latency webcam predictions through a modern UI.
+A production-ready face emotion recognition web app built with TensorFlow/Keras, FastAPI, Next.js, TailwindCSS, and OpenCV.
 
-## Features
+It trains on a FER-style dataset, serves predictions through a FastAPI backend, and delivers a modern webcam-based frontend with live emotion feedback, confidence smoothing, screenshot capture, and CSV logging.
 
-- MobileNetV2 and EfficientNetB0 transfer learning options tuned for CPU-friendly inference
-- Spatial attention block on top of backbone features
-- Data augmentation, validation split, checkpointing, early stopping, fine-tuning, and model export
-- FastAPI backend that loads the model once and exposes `/health` and `/predict`
-- OpenCV Haarcascade face detection with graceful `no_face` handling
-- Frontend webcam capture loop with rolling-average smoothing to reduce prediction flicker
-- Emotion confidence meter, animated emoji avatar, adaptive glow theme, dark/light mode
-- Emotion confidence history chart for the last 30 seconds
-- Screenshot capture and CSV log download
-- Render deployment config for frontend and backend
+## Highlights
+
+- EfficientNetB0 and MobileNetV2 training options for CPU-friendly deployment
+- Spatial attention layer for stronger feature focus
+- FastAPI backend with singleton model loading and face detection
+- Next.js frontend with webcam streaming, live prediction updates, and animated emotion UI
+- Rolling-average smoothing to reduce flickering predictions
+- Emotion history graph, screenshot capture, CSV log download, and dark/light mode
+- Render deployment config included
+
+## Demo Features
+
+- Live webcam emotion detection
+- Confidence score output
+- Graceful no-face handling
+- Multiple-face handling by selecting the largest visible face
+- Emotion-reactive avatar and glow theme
+- Last-30-seconds confidence history chart
+
+## Tech Stack
+
+- Model training: TensorFlow / Keras
+- Backend: FastAPI + Uvicorn
+- Face detection: OpenCV Haarcascade
+- Frontend: Next.js + TailwindCSS
+- Deployment: Render
 
 ## Project Structure
 
 ```text
 root/
-├── backend/
-│   ├── main.py
-│   ├── requirements.txt
-│   ├── tests/
-│   └── utils/
-├── dataset/
-├── frontend/
-│   ├── components/
-│   ├── pages/
-│   ├── styles/
-│   └── package.json
-├── saved_model/
-├── training/
-│   ├── dataset_loader.py
-│   ├── requirements.txt
-│   └── train.py
-├── render.yaml
-└── README.md
+|-- backend/
+|   |-- main.py
+|   |-- requirements.txt
+|   |-- tests/
+|   `-- utils/
+|-- dataset/
+|-- docs/
+|-- frontend/
+|   |-- components/
+|   |-- pages/
+|   |-- styles/
+|   `-- package.json
+|-- saved_model/
+|-- training/
+|   |-- dataset_loader.py
+|   |-- requirements.txt
+|   `-- train.py
+|-- render.yaml
+`-- README.md
 ```
 
-## 1. Local Setup
-
-### Backend and training
-
-```bash
-cd training
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-```
-
-Create `frontend/.env.local`:
-
-```env
-NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
-```
-
-## 2. Train the Model
-
-The dataset is expected at:
+## Dataset Format
 
 ```text
 dataset/
@@ -85,22 +69,67 @@ dataset/
     sad/
     surprise/
   test/
-    same structure
+    angry/
+    disgust/
+    fear/
+    happy/
+    neutral/
+    sad/
+    surprise/
 ```
 
-Run training from the `training/` folder:
+## Local Setup
 
-Recommended stronger baseline:
+### 1. Training environment
+
+```bash
+cd training
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Backend environment
+
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 3. Frontend environment
+
+```bash
+cd frontend
+npm install
+```
+
+Create `frontend/.env.local`:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+```
+
+## Training
+
+### Recommended model
+
+EfficientNetB0 is the current best default for accuracy:
 
 ```bash
 python train.py --architecture efficientnetb0 --batch-size 48 --epochs 24 --fine-tune-epochs 12
 ```
 
-Faster alternative:
+### Faster model
+
+Use MobileNetV2 if you want lower CPU inference cost:
 
 ```bash
 python train.py --architecture mobilenetv2 --image-size 96 --batch-size 48 --epochs 24 --fine-tune-epochs 12
 ```
+
+### Training outputs
 
 Artifacts are written to `saved_model/`:
 
@@ -110,9 +139,11 @@ Artifacts are written to `saved_model/`:
 - `training_summary.json`
 - `checkpoints/best_model.keras`
 
-`labels.json` now also stores the trained `architecture` and `image_size`, and the backend reads that automatically.
+`labels.json` stores the trained model architecture and image size, and the backend reads those automatically during inference.
 
-## 3. Run the Backend
+## Run the App
+
+### Backend
 
 From `backend/`:
 
@@ -120,7 +151,12 @@ From `backend/`:
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Important environment variables:
+Useful URLs:
+
+- [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
+- [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+Important backend environment variables:
 
 ```env
 MODEL_PATH=../saved_model/emotion_model.keras
@@ -130,11 +166,21 @@ CONFIDENCE_THRESHOLD=0.30
 CORS_ORIGINS=http://localhost:3000
 ```
 
-### API contract
+### Frontend
 
-`POST /predict`
+From `frontend/`:
 
-Returns:
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## API Contract
+
+### `POST /predict`
+
+Example success response:
 
 ```json
 {
@@ -143,11 +189,11 @@ Returns:
   "face_detected": true,
   "face_count": 1,
   "message": null,
-  "box": [x, y, w, h]
+  "box": [120, 84, 166, 166]
 }
 ```
 
-When no face is found:
+Example no-face response:
 
 ```json
 {
@@ -160,17 +206,11 @@ When no face is found:
 }
 ```
 
-## 4. Run the Frontend
+### `GET /health`
 
-From `frontend/`:
+Returns model availability, labels, architecture, image size, and OpenCV version.
 
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-## 5. Test the API
+## API Test Script
 
 From `backend/`:
 
@@ -178,26 +218,26 @@ From `backend/`:
 python tests/test_api.py --image ..\dataset\test\happy\PrivateTest_10714097.jpg
 ```
 
-## 6. Render Deployment
+## Deployment on Render
 
-This repo includes [`render.yaml`](/F:/Projects/Face%20Emotion%20V2/render.yaml) for two services:
+This repository includes [render.yaml](/F:/Projects/Face%20Emotion%20V2/render.yaml) for:
 
 1. `face-emotion-api`
 2. `face-emotion-frontend`
 
-### Backend Render settings
+### Backend service
 
 - Root directory: `backend`
 - Build command: `pip install -r requirements.txt`
 - Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
-### Frontend Render settings
+### Frontend service
 
 - Root directory: `frontend`
 - Build command: `npm install && npm run build`
 - Start command: `npm run start`
 
-### Required env vars
+### Required environment variables
 
 - `MODEL_PATH=../saved_model/emotion_model.keras`
 - `LABELS_PATH=../saved_model/labels.json`
@@ -206,35 +246,47 @@ This repo includes [`render.yaml`](/F:/Projects/Face%20Emotion%20V2/render.yaml)
 - `CORS_ORIGINS=https://your-frontend-domain.onrender.com`
 - `NEXT_PUBLIC_API_BASE_URL=https://your-backend-domain.onrender.com`
 
-### Deployment note
+### Important deployment note
 
-Render needs access to the trained model artifacts in `saved_model/`. Train locally first and push the exported model files you want deployed, or change deployment to download them from managed storage at build/start time.
+The repository currently ignores `dataset/` and generated trained model artifacts. That keeps GitHub clean, but it also means Render will not automatically receive your local trained model unless you:
 
-## 7. Screenshots
+- commit the model artifacts intentionally, or
+- upload them from managed storage at deploy/start time, or
+- retrain within your deployment workflow
 
-Add screenshots here after running the app:
+## Performance Notes
 
-- `docs/screenshot-dashboard.png`
-- `docs/screenshot-live-prediction.png`
+- EfficientNetB0 is the best current default for accuracy
+- MobileNetV2 is the better option if you need faster CPU inference
+- Sampling every 500ms gives a good balance of responsiveness and backend load
+- Lower frontend frame size if latency becomes noticeable on weaker systems
 
-## 8. Edge Cases Covered
+## Edge Cases Covered
 
 - No face detected
-- Multiple faces in frame: the largest face is used for prediction
-- Low-confidence predictions return `uncertain`
-- Frontend smoothing reduces rapid flicker between adjacent classes
-- Backend model is loaded once on startup for low latency
+- Multiple faces in frame
+- Low-confidence predictions
+- Webcam permission denied
+- Backend unavailable during live capture
 
-## 9. Performance Tips
+## Screenshots
 
-- `EfficientNetB0` is the strongest current default in this project for accuracy while staying reasonably lightweight
-- `MobileNetV2` remains the better choice if you need faster CPU inference
-- Use `opencv-python-headless` in deployment
-- Sample frames at 500ms to balance responsiveness and backend load
-- If latency is high, lower the client capture resolution from `256x256`
+Add screenshots here to improve the GitHub landing page:
 
-## 10. Future Improvements
+- [Live Dashboard Placeholder](/F:/Projects/Face%20Emotion%20V2/docs/live-dashboard-placeholder.txt)
+- [Prediction Panel Placeholder](/F:/Projects/Face%20Emotion%20V2/docs/prediction-panel-placeholder.txt)
 
-- Replace Haarcascade with a lightweight face detector DNN
-- Add Grad-CAM visualization page for model explainability
-- Store logs in a database for long-term analytics
+## Suggested GitHub Repo Description
+
+Production-ready face emotion recognition web app using EfficientNetB0, FastAPI, Next.js, TailwindCSS, and OpenCV with live webcam inference.
+
+## Suggested GitHub Topics
+
+`emotion-recognition`, `face-detection`, `computer-vision`, `fastapi`, `nextjs`, `tensorflow`, `keras`, `opencv`, `tailwindcss`, `render`
+
+## Future Improvements
+
+- Add a confusion matrix and per-class metrics report
+- Replace Haarcascade with a lightweight DNN face detector
+- Add Grad-CAM visualization for explainability
+- Store prediction history in a database
