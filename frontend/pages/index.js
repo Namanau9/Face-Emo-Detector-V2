@@ -4,7 +4,7 @@ import EmotionAvatar from "../components/EmotionAvatar";
 import EmotionHistoryChart from "../components/EmotionHistoryChart";
 import PredictionPanel from "../components/PredictionPanel";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 const HISTORY_LIMIT = 60;
 const LOG_LIMIT = 300;
 
