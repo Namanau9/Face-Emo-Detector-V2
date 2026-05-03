@@ -1,6 +1,7 @@
 services:
   - type: web
     name: face-emotion-api
+    plan: free
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt
@@ -18,6 +19,7 @@ services:
         value: https://your-frontend-domain.onrender.com,http://localhost:3000
   - type: web
     name: face-emotion-frontend
+    plan: free
     runtime: node
     rootDir: frontend
     buildCommand: npm install && npm run build
